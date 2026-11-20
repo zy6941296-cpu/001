@@ -1,0 +1,38 @@
+name: OmniRoute-VPS
+on:
+  workflow_dispatch:
+
+jobs:
+  omniroute-server:
+    runs-on: ubuntu-latest
+    timeout-minutes: 350
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Connect to Tailscale
+        uses: tailscale/github-action@v3
+        with:
+          authkey: ${{ secrets.TAILSCALE_AUTH_KEY }}
+          tags: tag:ci
+
+      - name: Run OmniRoute Container
+        run: |
+          docker run -d \
+            --name omniroute \
+            --restart unless-stopped \
+            -p 20128:20128 \
+            -v omniroute-data:/app/data \
+            diegosouzapw/omniroute:latest
+
+      - name: Display Tailscale IP
+        run: |
+          echo "✅ OmniRoute is running!"
+          echo "Access it via: http://$(tailscale ip -4 | head -n 1):20128"
+          echo "Keep this workflow running to keep the server alive."
+
+      - name: Keep Alive
+        run: |
+          while true; do
+            sleep 300
+          done
