@@ -7,20 +7,16 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 350
     steps:
-      - name: Install & Connect Tailscale
+      - name: Install Tailscale
         run: |
-          # تثبيت Tailscale بنفس طريقة سكربت VPS القديم
           curl -fsSL https://tailscale.com/install.sh | sh
           sudo tailscale up --authkey=${{ secrets.TAILSCALE_AUTH_KEY }} --hostname=omniroute
-          
-          # استخراج الـ IP وحفظه في متغير البيئة
           TSIP=$(tailscale ip -4 | head -n 1)
           echo "TAILSCALE_IP=$TSIP" >> $GITHUB_ENV
-          echo "✅ Tailscale Connected. IP: $TSIP"
+          echo "✅ Tailscale IP: $TSIP"
 
       - name: Run OmniRoute Container
         run: |
-          # تشغيل OmniRoute باستخدام Docker في الخلفية
           docker run -d \
             --name omniroute \
             --restart unless-stopped \
@@ -30,13 +26,12 @@ jobs:
 
       - name: Show Access Info
         run: |
-          echo "✅ OmniRoute is running successfully!"
-          echo "🌐 Access it from your browser at: http://${{ env.TAILSCALE_IP }}:20128"
-          echo "⚠️ Make sure Tailscale is turned ON on your phone/PC to access this link."
+          echo "✅ OmniRoute is running!"
+          echo "🌐 رابط الدخول: http://${{ env.TAILSCALE_IP }}:20128"
 
       - name: Keep Server Alive
         run: |
           while true; do
-            echo "[$(date)] OmniRoute server is running..."
+            echo "[$(date)] OmniRoute running..."
             sleep 300
           done
